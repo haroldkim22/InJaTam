@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>부소산 파노라마 지도</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Leaflet & Pannellum -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+  <style>
+    html, body { height: 100%; margin: 0; }
+    #map, #panorama { width: 100%; height: 100%; }
+    #panorama { display: none; }
+    #controls {
+      position: absolute; top: 10px; left: 10px; z-index: 1000;
+      display: none;
+    }
+    #controls button { margin-right: 5px; }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+<div id="panorama"></div>
+<div id="controls">
+  <button id="soundToggle">🔊 Sound On</button>
+  <button id="exitBtn">⏪ Back to Map</button>
+</div>
+
+<!-- JS libs -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+
+<script>
+  // === 1. 메인 지도: png 이미지 불러오기 ===
+  const map = L.map('map', {
+    crs: L.CRS.Simple, // 단순 픽셀 좌표계
+    minZoom: -2,
+    maxZoom: 4
+  });
+
+const imgWidth = 2754;   // 실제 PNG 가로 px
+const imgHeight = 1556;   // 실제 PNG 세로 px2754 1556
+const bounds = [[0,0], [imgHeight, imgWidth]];
+
+const imageUrl = 'https://i.imgur.com/O5p8OLJ.png';
+L.imageOverlay(imageUrl, bounds).addTo(map);
+
+// 이미지 크기에 맞게 화면 딱 맞추기
+map.fitBounds(bounds);
+
+// 현재 화면 줌 레벨을 최소 줌으로 설정 (축소 금지)
+const currentZoom = map.getZoom();
+map.setMinZoom(currentZoom);
+
+// 화면 이동 범위를 이미지 내부로 고정
+map.setMaxBounds(bounds);
+
+
+
+  // === 2. 마커 20개 랜덤 생성 ===
+  for (let i=0; i<20; i++) {
+    const x = Math.random() * imgWidth;
+    const y = Math.random() * imgHeight;
+    const marker = L.marker([y,x]).addTo(map);
+    marker.bindTooltip("마커"+(i+1), {direction:"top"});
+    marker.on("click", ()=> showPanorama("마커"+(i+1)));
+  }
+
+  // === 3. 파노라마 뷰어 ===
+  let viewer;
+  let audio = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_b3bcbba7a1.mp3");
+  audio.loop = true;
+
+  function showPanorama(name){
+    document.getElementById("map").style.display="none";
+    document.getElementById("panorama").style.display="block";
+    document.getElementById("controls").style.display="block";
+    if(viewer) viewer.destroy();
+    viewer = pannellum.viewer('panorama', {
+      type: "equirectangular",
+      panorama: "https://github.com/haroldkim22/InJaTam/blob/main/20250930_101940.jpg?raw=true",
+      autoLoad: true,
+      title: name
+    });
+  }
+
+  document.getElementById("soundToggle").onclick = ()=>{
+    if(audio.paused){ audio.play(); soundToggle.textContent="🔊 Sound On";}
+    else { audio.pause(); soundToggle.textContent="🔇 Sound Off";}
+  };
+  document.getElementById("exitBtn").onclick = ()=>{
+    document.getElementById("map").style.display="block";
+    document.getElementById("panorama").style.display="none";
+    document.getElementById("controls").style.display="none";
+    if(viewer) viewer.destroy();
+    audio.pause();
+  };
+</script>
+</body>
+</html>
