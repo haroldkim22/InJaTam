@@ -54,7 +54,7 @@
 
     .map-wrap {
       position: relative;
-      height: calc(100vh - var(--header-h) - var(--between-gap) - var(--map-bottom-gap));
+      height: calc(95vh - var(--header-h) - var(--between-gap) - var(--map-bottom-gap));
       margin-top: var(--between-gap);
       margin-bottom: var(--map-bottom-gap);
       border-radius: 12px;
@@ -219,7 +219,7 @@
       margin-top: 10px;
     }
     #popup-audio {
-      width: 60%;   /* 원하는 비율 (예: 60%) */
+      width: 80%;   /* 원하는 비율 (예: 60%) */
       max-width: 300px;  /* 최대 고정 크기 */
       /* height: 20%; */
       /* max-height: 10px; */
@@ -402,13 +402,15 @@
     const bounds=[[0,0],[imgHeight,imgWidth]];
     const map=L.map('map',{
         crs:L.CRS.Simple,
-        minZoom:-1,
+        minZoom:-2,
         maxZoom:1,
         maxBounds:bounds,
-        maxBoundsViscosity:1.0
+        maxBoundsViscosity:1.0,
+        zoomDelta: 0.25,
+        zoomSnap: 0.25
     });
 
-    const customIcon=L.icon({
+    const customIcon=L.divIcon({
       iconUrl:'marker.svg',
       iconSize:[100,100],
       iconAnchor:[50,75],
@@ -418,7 +420,7 @@
     L.imageOverlay("https://i.imgur.com/O5p8OLJ.png",bounds).addTo(map);
 
     map.fitBounds(bounds); 
-    map.setMinZoom(map.getZoom()); 
+    map.setMinZoom(map.getZoom()-0.5); 
     map.setMaxBounds(bounds);
     map.on('zoomend',()=>{map.dragging.enable(); map.keyboard.enable();});
 
@@ -745,6 +747,8 @@
         const audioEl = document.getElementById("popup-audio");
         audioEl.pause();      
         audioEl.currentTime = 0; 
+
+        popup.style.display = "none";
     }
 
     popupClose.onclick = closePopup;
