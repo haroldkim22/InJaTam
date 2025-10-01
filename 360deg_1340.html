@@ -64,6 +64,18 @@
       border: 2px solid rgba(0, 0, 0, 0.12);
     }
 
+    /* .map-wrap {
+      position: relative;
+      height: calc(100vh - var(--header-h) - var(--between-gap) - var(--map-bottom-gap));
+      margin-top: var(--between-gap);
+      margin-bottom: var(--map-bottom-gap);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+      background: #eef7ff;
+      border: 2px solid rgba(0, 0, 0, 0.12);
+    } */
+
     #map {
       position: absolute;
       inset: 0;
@@ -124,8 +136,29 @@
       :root{ --header-h: 96px; --side-gap: 16px; }
       #title{ font-size: 28px; }
     }
-    
+
     #popup {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      background: white;
+      padding: 16px;
+      border-radius: 20px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+      z-index: 2000;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      width: 90%;
+      max-width: 800px;
+      max-height: 75vh;
+      overflow-y: auto;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      /* overflow: hidden; */
+    }
+    
+    /* #popup {
       position: absolute;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%) scale(0.8);
@@ -141,7 +174,7 @@
       display: none;
       flex-direction: column;
       align-items: center;
-    }
+    } */
     #popup.show {
       display: flex;
       opacity: 1;
@@ -169,11 +202,26 @@
       color: red;
     } */
 
-    #popup-panorama {
+    /* #popup-panorama {
         width: 750px;
         height: 400px;   /* 원하는 크기 (예: 300~400px) */
-        border-radius: 8px;
+        /* border-radius: 8px;
         margin-top: 10px;
+    } */ */
+    #popup-panorama {
+      width: 100%;
+      max-width: 800px;
+      height: 10vh;
+      max-height: 10vh;
+      border-radius: 0;
+      margin-top: 10px;
+    }
+    #popup-audio {
+      width: 60%;   /* 원하는 비율 (예: 60%) */
+      max-width: 300px;  /* 최대 고정 크기 */
+      /* height: 20%; */
+      /* max-height: 10px; */
+      margin: 5px;
     }
     
     #overlay {
@@ -187,14 +235,30 @@
 
     
     /* 태그 선택 팝업 */
-    #tagPopup {
+    /* #tagPopup {
       position:fixed; top:50%; left:50%;
       transform:translate(-50%,-50%);
       background:#fff; padding:16px; border-radius:12px;
       box-shadow:0 12px 32px rgba(0,0,0,0.25);
       z-index:2200; display:none;
       width:360px; max-width:90%;
+    } */
+    #tagPopup {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+      z-index: 2200;
+      display: none;
+      width: 90%;
+      max-width: 400px;
+      max-height: 80vh;
+      overflow-y: auto;
     }
+
     #tagList { display:flex; flex-wrap:wrap; gap:8px; max-height:180px; overflow:auto; }
     .tag-chip {
       border:1px solid #ddd; border-radius:999px;
@@ -206,7 +270,7 @@
     #tagActions button.primary { background:#1e90ff; color:#fff; border-color:#1e90ff; }
 
     /* 마커 정보 표 팝업 */
-    #infoPopup {
+    /* #infoPopup {
       position: fixed;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
@@ -218,7 +282,24 @@
       display: none;
       width: 400px;
       max-width: 90%;
+    } */
+
+    #infoPopup {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+      z-index: 2200;
+      display: none;
+      width: 90%;
+      max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
     }
+
     #infoPopup h3 { margin-top:0; margin-bottom:12px; }
     #infoTable table { width:100%; border-collapse: collapse; }
     #infoTable th, #infoTable td {
@@ -226,6 +307,24 @@
     }
     #infoTable th { background:#f5f5f5; }
     
+    /* 모바일 대응 */
+    @media (max-width: 640px) {
+      #popup { padding: 12px; }
+      #popup-panorama { height: 35vh; }
+      #tagPopup, #infoPopup { padding: 12px; }
+    }
+
+    /* 태블릿 대응 */
+    @media (min-width: 641px) and (max-width: 1024px) {
+      #popup-panorama { height: 45vh; }
+    }
+
+    /* 데스크탑 대응 */
+    @media (min-width: 1025px) {
+      #popup-panorama { height: 500px; }
+    }
+
+
     .leaflet-container { background:transparent !important; }
     .leaflet-control-addmarker,
     .leaflet-control-infotable,
@@ -244,6 +343,9 @@
       padding: 6px 10px;
     }
   </style>
+
+  
+
 </head>
 
 <body>
@@ -263,7 +365,7 @@
         <div class="popup-content">
             <span id="popup-close">✖</span>
             <h3 id="popup-title">마커 정보</h3>
-            <audio id="popup-audio" controls style="width:90%; margin:10px 0;"></audio>
+            <audio id="popup-audio" controls></audio>
             <div id="popup-panorama"></div>
         </div>
     </div>
@@ -326,7 +428,7 @@
       {
         coords: [200, 300],
         name: "전망대",
-        pano: "images/5-1.jpg",
+        pano: "5-1.jpg",
         audio: "3.m4a",
         tags: ["자연", "조용함"]
       }
@@ -576,10 +678,10 @@
 
             const newPanorama = document.createElement("div");
             newPanorama.id = "popup-panorama";
-            newPanorama.style.width = "750px";
-            newPanorama.style.height = "600px";
-            newPanorama.style.borderRadius = "8px";
-            newPanorama.style.marginTop = "10px";
+            // newPanorama.style.width = "750px";
+            // newPanorama.style.height = "600px";
+            // newPanorama.style.borderRadius = "8px";
+            // newPanorama.style.marginTop = "10px";
 
             popup.querySelector(".popup-content").appendChild(newPanorama);
 
@@ -624,7 +726,3 @@
   </script>
 </body>
 </html>
-
-
-
-
