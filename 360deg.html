@@ -46,10 +46,11 @@
       border: 2px solid rgba(0, 0, 0, 0.15);
     }
     #title {
-      font-size: 30px;
-      font-weight: 800;
-      color: #555;
-      text-shadow: 1px 2px 6px rgba(0,0,0,0.25);
+      font: sans-serif;
+      font-size: 40px;
+      font-weight: 1000;
+      color: #2a2525;
+      /* text-shadow: 1px 2px 6px rgba(0,0,0,0.25); */
     }
 
     .map-wrap {
@@ -354,7 +355,7 @@
   <!-- ==================== HTML ==================== -->
   <div class="page">
     <header id="header">
-      <div id="title">🗺️ 부소산 파노라마 지도</div>
+      <div id="title">🗺️ 부소산 파노라마 지도 🗺️</div>
     </header>
 
     <div class="map-wrap">
@@ -411,7 +412,7 @@
     });
 
     const customIcon=L.icon({
-      iconUrl:'marker.svg',
+      iconUrl:'https://raw.githubusercontent.com/haroldkim22/InJaTam/refs/heads/main/marker.svg',
       iconSize:[30,30],
       iconAnchor:[15,30],
       popupAnchor: [0, -30]
@@ -438,43 +439,44 @@
     // ================================
 
     const markerData=[
-      {coords:[426.80,1398.61], name:"1", pano:"images/1.jpg", audio:"audio/1_소리.mp3", tags:["산책", "자연"]},
-      {coords:[470.61,1313.18], name:"2", pano:"images/2.jpg", audio:"audio/2_소리.mp3", tags:["산책"]},
-      {coords:[466.61,1260.17], name:"3", pano:"images/3.jpg", audio:"audio/3_소리.mp3", tags:["산책", "공원", "잔디"]},
-      {coords:[438.61,1129.13], name:"4", pano:"images/4.jpg", audio:"audio/4_소리.mp3", tags:["산책", "공원", "잔디"]},
-      {coords:[664.61,1176.19], name:"5", pano:"images/5.jpg", audio:"audio/5_소리.mp3", tags:["산책", "자연"]},
-      {coords:[732.61,1271.22], name:"6", pano:"images/6.jpg", audio:"audio/6_소리.mp3", tags:["산책", "자연"]},
-      {coords:[898.61,1246.21], name:"7", pano:"images/7.jpg", audio:"audio/7_소리.mp3", tags:["등산", "자연"]},
-      {coords:[1030.61,1289.21], name:"8", pano:"images/8.jpg", audio:"audio/8_소리.mp3", tags:["등산", "자연"]},
+      {coords:[426.80,1398.61], name:"부소산 1", pano:"images/1.jpg", audio:"audio/1_소리.mp3", tags:["산책", "자연"]},
+      {coords:[470.61,1313.18], name:"부소산 유적 1", pano:"images/2.jpg", audio:"audio/2_소리.mp3", tags:["산책"]},
+      {coords:[466.61,1260.17], name:"부소산 유적 2", pano:"images/3.jpg", audio:"audio/3_소리.mp3", tags:["산책", "공원", "잔디"]},
+      {coords:[438.61,1129.13], name:"부소산 유적 3", pano:"images/4.jpg", audio:"audio/4_소리.mp3", tags:["산책", "공원", "잔디"]},
+      {coords:[664.61,1176.19], name:"부소산 2", pano:"images/5.jpg", audio:"audio/5_소리.mp3", tags:["산책", "자연"]},
+      {coords:[732.61,1271.22], name:"부소산 3", pano:"images/6.jpg", audio:"audio/6_소리.mp3", tags:["산책", "자연"]},
+      {coords:[898.61,1246.21], name:"부소산 4", pano:"images/7.jpg", audio:"audio/7_소리.mp3", tags:["등산", "자연"]},
+      {coords:[1030.61,1289.21], name:"부소산 5", pano:"images/8.jpg", audio:"audio/8_소리.mp3", tags:["등산", "자연"]},
       {coords:[1125.61,1251.20], name:"낙화암", pano:"images/9.jpg", audio:"audio/9_소리.mp3", tags:["등산", "자연", "강", "명소"]},
       {coords:[1161.61,1379.24], name:"구드레 선착장", pano:"images/10.jpg", audio:"audio/10_소리.mp3", tags:["등산", "자연", "강", "명소", "선착장"]},
-      {coords:[966.61,1330.22], name:"11", pano:"images/11.jpg", audio:"audio/11_소리.mp3", tags:["등산", "자연"]},
-      {coords:[859.61,1394.24], name:"12", pano:"images/12.jpg", audio:"audio/12_소리.mp3", tags:["등산", "자연"]},
-      {coords:[918.61,1663.28], name:"13", pano:"images/13.jpg", audio:"audio/13_소리.mp3", tags:["등산", "자연"]},
+      {coords:[966.61,1330.22], name:"부소산 6", pano:"images/11.jpg", audio:"audio/11_소리.mp3", tags:["등산", "자연"]},
+      {coords:[859.61,1394.24], name:"부소산 7", pano:"images/12.jpg", audio:"audio/12_소리.mp3", tags:["등산", "자연"]},
+      {coords:[918.61,1663.28], name:"부소산 8", pano:"images/13.jpg", audio:"audio/13_소리.mp3", tags:["등산", "자연"]},
       {coords:[949.22,1766.57], name:"궁녀사", pano:"images/궁녀사.jpg", audio:"audio/궁녀사_소리.mp3", tags:["등산", "자연", "건축물", "절"]},
-      {coords:[833.61,1887.26], name:"14", pano:"images/14.jpg", audio:"audio/14_소리.mp3", tags:["등산", "자연"]},
-      {coords:[649.61,1809.24], name:"15", pano:"images/15.jpg", audio:"audio/15_소리.mp3", tags:["등산", "자연"]},
-      {coords:[524.61,1426.13], name:"16", pano:"images/16.jpg", audio:"audio/16_소리.mp3", tags:["자연", "건축물", "연못", "연잎"]},
-      {coords:[582.61,1480.15], name:"17", pano:"images/17.jpg", audio:"audio/17_소리.mp3", tags:["건축물", "절"]},
-      {coords:[646.61,1746.22], name:"18", pano:"images/18.jpg", audio:"audio/18_소리.mp3", tags:["건축물", "절"]},
-      {coords:[577.61,1370.11], name:"19", pano:"images/19.jpg", audio:"audio/19_소리.mp3", tags:["산책", "자연"]},
-      {coords:[825.61,1237.08], name:"20", pano:"images/20.jpg", audio:"audio/20_소리.mp3", tags:["등산", "자연"]},
-      {coords:[328.61,1284.18], name:"21", pano:"images/21.jpg", audio:"audio/21_소리.mp3", tags:["도로"]},
-      {coords:[351.61,1398.22], name:"22", pano:"images/22.jpg", audio:"audio/22_소리.mp3", tags:["잔디"]},
-      {coords:[410.61,1311.19], name:"23", pano:"images/23.jpg", audio:"audio/23_소리.mp3", tags:["잔디", "연잎"]},
-      {coords:[407.61,1223.17], name:"24", pano:"images/24.jpg", audio:"audio/24_소리.mp3", tags:["건축물", "절"]},
-      {coords:[632.61,933.09], name:"25", pano:"images/25.jpg", audio:"audio/25_소리.mp3", tags:["공원", "건축물", "산책"]},
-      {coords:[483.61,1068.12], name:"26", pano:"images/26.jpg", audio:"audio/26_소리.mp3", tags:["카페", "음식", "건축물"]},
-      {coords:[356.61,1178.15], name:"27", pano:"images/27.jpg", audio:"audio/27_소리.mp3", tags:["음식", "도로"]},
-      {coords:[336.61,1342.17], name:"28", pano:"images/28.jpg", audio:"audio/28_소리.mp3", tags:["도로"]},
-      {coords:[420.61,1460.19], name:"29", pano:"images/29.jpg", audio:"audio/29_소리.mp3", tags:["건축물", "절", "도로"]},
-      {coords:[372.61,1585.22], name:"30", pano:"images/30.jpg", audio:"audio/30_소리.mp3", tags:["학교", "도로"]},
-      {coords:[294.61,1733.17], name:"31", pano:"images/31.jpg", audio:"audio/31_소리.mp3", tags:["도로"]},
-      {coords:[500.61,2084.22], name:"32", pano:"images/32.jpg", audio:"audio/32_소리.mp3", tags:["도로"]},
-      {coords:[709.61,2136.24], name:"33", pano:"images/33.jpg", audio:"audio/33_소리.mp3", tags:["도로"]},
-      {coords:[984.61,2018.206], name:"34", pano:"images/34.jpg", audio:"audio/34_소리.mp3", tags:["도로"]},
-      {coords:[636.61,864.16], name:"35", pano:"images/35.jpg", audio:"audio/35_소리.mp3", tags:["공원", "건축물", "산책"]},
+      {coords:[833.61,1887.26], name:"부소산 9", pano:"images/14.jpg", audio:"audio/14_소리.mp3", tags:["등산", "자연"]},
+      {coords:[649.61,1809.24], name:"부소산 10", pano:"images/15.jpg", audio:"audio/15_소리.mp3", tags:["등산", "자연"]},
+      {coords:[524.61,1426.13], name:"부소산 11", pano:"images/16.jpg", audio:"audio/16_소리.mp3", tags:["자연", "건축물", "연못", "연잎"]},
+      {coords:[582.61,1480.15], name:"부소산 12", pano:"images/17.jpg", audio:"audio/17_소리.mp3", tags:["건축물", "절"]},
+      {coords:[646.61,1746.22], name:"부소산 13", pano:"images/18.jpg", audio:"audio/18_소리.mp3", tags:["건축물", "절"]},
+      {coords:[577.61,1370.11], name:"부소산 14", pano:"images/19.jpg", audio:"audio/19_소리.mp3", tags:["산책", "자연"]},
+      {coords:[825.61,1237.08], name:"부소산 15", pano:"images/20.jpg", audio:"audio/20_소리.mp3", tags:["등산", "자연"]},
+      {coords:[328.61,1284.18], name:"도로 1", pano:"images/21.jpg", audio:"audio/21_소리.mp3", tags:["도로"]},
+      {coords:[351.61,1398.22], name:"풀밭 1", pano:"images/22.jpg", audio:"audio/22_소리.mp3", tags:["잔디"]},
+      {coords:[410.61,1311.19], name:"풀밭 2", pano:"images/23.jpg", audio:"audio/23_소리.mp3", tags:["잔디", "연잎"]},
+      {coords:[407.61,1223.17], name:"절 1", pano:"images/24.jpg", audio:"audio/24_소리.mp3", tags:["건축물", "절"]},
+      {coords:[632.61,933.09], name:"구드래 공원 1", pano:"images/25.jpg", audio:"audio/25_소리.mp3", tags:["공원", "건축물", "산책"]},
+      {coords:[483.61,1068.12], name:"카페 부여유", pano:"images/26.jpg", audio:"audio/26_소리.mp3", tags:["카페", "음식", "건축물"]},
+      {coords:[356.61,1178.15], name:"구드래 보리밥", pano:"images/27.jpg", audio:"audio/27_소리.mp3", tags:["음식", "도로"]},
+      {coords:[336.61,1342.17], name:"유치원 앞", pano:"images/28.jpg", audio:"audio/28_소리.mp3", tags:["도로"]},
+      {coords:[420.61,1460.19], name:"절 2", pano:"images/29.jpg", audio:"audio/29_소리.mp3", tags:["건축물", "절", "도로"]},
+      {coords:[372.61,1585.22], name:"학교", pano:"images/30.jpg", audio:"audio/30_소리.mp3", tags:["학교", "도로"]},
+      {coords:[294.61,1733.17], name:"도로", pano:"images/31.jpg", audio:"audio/31_소리.mp3", tags:["도로"]},
+      {coords:[500.61,2084.22], name:"도로", pano:"images/32.jpg", audio:"audio/32_소리.mp3", tags:["도로"]},
+      {coords:[709.61,2136.24], name:"도로", pano:"images/33.jpg", audio:"audio/33_소리.mp3", tags:["도로"]},
+      {coords:[984.61,2018.206], name:"도로", pano:"images/34.jpg", audio:"audio/34_소리.mp3", tags:["도로"]},
+      {coords:[636.61,864.16], name:"구드래 공원 2", pano:"images/35.jpg", audio:"audio/35_소리.mp3", tags:["공원", "건축물", "산책"]},
     ];
+
 
 
     // ================================
@@ -760,7 +762,14 @@
     }
 
     popupClose.onclick = closePopup;
-    overlay.onclick = closePopup;
+    overlay.onclick = () => {
+      closePopup();      // 파노라마 팝업 닫기
+      closeTagPopup();   // 태그 팝업 닫기
+      closeInfoPopup();  // 정보 팝업 닫기
+    };
+
+
+
 
     // 사운드 / 종료
     document.getElementById("soundToggle").onclick=function(){
@@ -777,4 +786,3 @@
   </script>
 </body>
 </html>
-
