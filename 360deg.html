@@ -159,6 +159,14 @@
       pointer-events: none;
       /* overflow: hidden; */
     }
+
+    #popup-title {
+      font-size: 30px;   /* 기본보다 크게 */
+      font-weight: bold;
+      margin-bottom: 4px;  /* 여백 줄이기 */
+      text-align: center;
+    }
+
     
     /* #popup {
       position: absolute;
@@ -368,6 +376,7 @@
         <div class="popup-content">
             <span id="popup-close">✖</span>
             <h3 id="popup-title">마커 정보</h3>
+            <div id="popup-tags" style="margin:8px 0; font-size:14px; color:#000000;"></div>
             <audio id="popup-audio" controls></audio>
             <div id="popup-panorama"></div>
         </div>
@@ -718,6 +727,16 @@
 
     function showPanorama(name, panoUrl, audioUrl){
         popupTitle.textContent = name;
+
+        // ✅ 태그 표시 업데이트
+        const marker = markerData.find(m => m.name === name);
+        const popupTags = document.getElementById("popup-tags");
+        if (marker && marker.tags && marker.tags.length > 0) {
+            popupTags.textContent = "#" + marker.tags.join(" #");
+        } else {
+            popupTags.textContent = "(태그 없음)";
+        }
+
         popup.style.display = "block";
         overlay.classList.add("show");
         setTimeout(() => {
