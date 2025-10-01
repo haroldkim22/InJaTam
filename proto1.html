@@ -152,6 +152,13 @@
       maxBoundsViscosity: 1.0   // 경계 바깥 드래그 못 나가게
     });
 
+    const customIcon = L.icon({
+      iconUrl: 'https://raw.githubusercontent.com/haroldkim22/InJaTam/refs/heads/haroldkim22-markertry/marker.svg',
+      iconSize: [100, 100], 
+      iconAnchor: [20, 40], 
+      popupAnchor: [0, -40] 
+    })
+
     const imageUrl = 'https://i.imgur.com/O5p8OLJ.png';
     L.imageOverlay(imageUrl, bounds).addTo(map);
 
@@ -176,7 +183,7 @@
     for (let i=0; i<20; i++) {
       const x = Math.random() * imgWidth;
       const y = Math.random() * imgHeight;
-      const marker = L.marker([y,x]).addTo(map);
+      const marker = L.marker([y,x], {icon: customIcon}).addTo(map);
       marker.bindTooltip("마커"+(i+1), {direction:"top"});
       marker.on("click", ()=> showPanorama("마커"+(i+1)));
     }
@@ -218,3 +225,4 @@
   </script>
 </body>
 </html>
+
