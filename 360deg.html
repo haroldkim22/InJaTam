@@ -489,24 +489,21 @@
 
     const AddMarkerControl = L.Control.extend({
       onAdd: function(map) {
-        const container = L.DomUtil.create("div", "leaflet-control leaflet-bar");
         const btn = L.DomUtil.create("div", "leaflet-control-addmarker leaflet-bar");
         btn.innerHTML = "📍";
-        btn.href = "#";
         btn.title = "마커 추가";
         addBtnRef = btn;
 
-        L.DomEvent.disableClickPropagation(container);
-        L.DomEvent.disableScrollPropagation(container);
+        L.DomEvent.disableClickPropagation(btn);
+        L.DomEvent.disableScrollPropagation(btn);
 
-        L.DomEvent.on(btn, "click", (e) => {
-          L.DomEvent.stop(e);  // 기본 동작(스크롤/드래그) 차단
+        btn.onclick = function(e) {
+          e.preventDefault();
           addMode = !addMode;
           btn.classList.toggle("active", addMode);
           if(addMode) alert("지도에서 위치를 클릭해 새 마커를 추가하세요.");
-        });
-
-        return container;
+        };
+        return btn;
       }
     });
 
@@ -659,13 +656,13 @@
       if(!addMode) return; 
 
       const name = prompt("마커 이름을 입력하세요:"); 
-      if(!name) { addMode=false; addBtnRef.classList.remove("active"); return; }
+      if(!name) return;
 
       const panoUrl = prompt("파노라마(사진) URL을 입력하세요:"); 
-      if(!panoUrl) { addMode=false; addBtnRef.classList.remove("active"); return; }
+      if(!panoUrl) return;
 
       const audioUrl = prompt("소리 URL을 입력하세요:"); 
-      if(!audioUrl) { addMode=false; addBtnRef.classList.remove("active"); return; }
+      if(!audioUrl) return;
 
       const tagsInput = prompt("태그를 입력하세요 (쉼표로 구분, 예: 자연, 조용함):");
       const tags = tagsInput? tagsInput.split(",").map(t=>t.trim()).filter(Boolean):[];
@@ -674,9 +671,9 @@
       markerData.push(newItem); 
       createMarker(newItem);
 
-      // 마커 추가 후 버튼 초기화
-      addMode = false;
-      addBtnRef.classList.remove("active");
+      // ✅ 성공적으로 추가된 경우에만 addMode 해제
+      addMode = false; 
+      if(addBtnRef) addBtnRef.classList.remove("active");
     });
 
 
