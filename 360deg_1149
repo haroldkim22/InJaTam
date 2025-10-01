@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>부소산 파노라마 지도</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Leaflet & Pannellum -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css" />
+
+  <style>
+    :root{
+      --page-max-w: 1200px;
+      --side-gap: 32px;
+      --header-h: 120px;
+      --between-gap: 24px;
+      --map-bottom-gap: 16px;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: linear-gradient(135deg, #f9fdfd 0%, #eefdf3 100%);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, 'Noto Sans KR', sans-serif;
+    }
+
+    .page {
+      min-height: 100%;
+      max-width: var(--page-max-w);
+      margin: 0 auto;
+      padding: 0 var(--side-gap);
+      display: flex;
+      flex-direction: column;
+    }
+
+    #header {
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 12px;
+      background: #f0fff4;
+      border-radius: 14px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+      border: 2px solid rgba(0, 0, 0, 0.15);
+    }
+    #title {
+      font-size: 30px;
+      font-weight: 800;
+      color: #555;
+      text-shadow: 1px 2px 6px rgba(0,0,0,0.25);
+    }
+
+    .map-wrap {
+      position: relative;
+      height: calc(100vh - var(--header-h) - var(--between-gap) - var(--map-bottom-gap));
+      margin-top: var(--between-gap);
+      margin-bottom: var(--map-bottom-gap);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+      background: #eef7ff;
+      border: 2px solid rgba(0, 0, 0, 0.12);
+    }
+
+    #map {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .leaflet-container { background: transparent !important; }
+    
+    #controls {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      z-index: 1000;
+      display: none;
+    }
+    #controls button {
+      margin-right: 8px;
+      padding: 8px 12px;
+      border: 0;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.9);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      font-weight: 600;
+      color: #083a57;
+      cursor: pointer;
+    }
+    #controls button:hover { background: #ffffff; }
+    
+    
+    /* 📍 버튼 스타일 */
+    .leaflet-control-addmarker {
+      background: white;
+      border: 1px solid #ccc;
+      width: 30px;
+      height: 30px;
+      line-height: 28px;
+      font-size: 18px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .leaflet-control-addmarker.active { background: #ffe082; }
+    
+    /* ℹ️ 버튼 스타일 */
+    .leaflet-control-info {
+      background: white;
+      border: 1px solid #ccc;
+      width: 30px;
+      height: 30px;
+      line-height: 28px;
+      font-size: 18px;
+      text-align: center;
+      cursor: pointer;
+    }
+    
+    
+    @media (max-width: 640px){
+      :root{ --header-h: 96px; --side-gap: 16px; }
+      #title{ font-size: 28px; }
+    }
+    
+    #popup {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+      z-index: 2000;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      width: 800px;
+      max-width: 90%;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+    }
+    #popup.show {
+      display: flex;
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    #popup.hide {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.8);
+    }
+    #popup .popup-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #popup-close {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: bold;
+      color: #444;
+    }
+    #popup-close:hover {
+      color: red;
+    }
+
+    #popup-panorama {
+        width: 750px;
+        height: 600px;   /* 원하는 크기 (예: 300~400px) */
+        border-radius: 8px;
+        margin-top: 10px;
+    }
+    
+    #overlay {
+      position: fixed;
+      inset: 0;   /* top, left, right, bottom = 0 */
+      background: rgba(0,0,0,0.3);
+      z-index: 1500;
+      display: none;
+    }
+    #overlay.show { display: block; }
+    
+
+    .leaflet-tooltip {
+      background-color: rgba(255,255,255,0.5);
+      border-radius: 12px;
+      color: #333; font-weight: bold; font-size: 12px;
+      padding: 6px 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ==================== HTML ==================== -->
+  <div class="page">
+    <header id="header">
+      <div id="title">🗺️ 부소산 파노라마 지도</div>
+    </header>
+
+    <div class="map-wrap">
+      <div id="map"></div>
+      <div id="panorama"></div>
+
+      <div id="controls">
+        <button id="soundToggle">🔊 Sound On</button>
+        <button id="exitBtn">⏪ Back to Map</button>
+      </div>
+
+    <div id="overlay"></div>
+    <div id="popup">
+        <div class="popup-content">
+            <span id="popup-close">✖</span>
+            <h3 id="popup-title">마커 정보</h3>
+            <div id="popup-panorama"></div>
+        </div>
+    </div>
+  </div>
+
+  <!-- ==================== JS ==================== -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+
+  <script>
+    // 지도 기본 세팅
+    const imgWidth=2754, imgHeight=1556;
+    const bounds=[[0,0],[imgHeight,imgWidth]];
+    const map=L.map('map',{
+        crs:L.CRS.Simple,
+        minZoom:-1,
+        maxZoom:1,
+        maxBounds:bounds,
+        maxBoundsViscosity:1.0
+    });
+
+    const customIcon=L.icon({
+      iconUrl:'https://raw.githubusercontent.com/haroldkim22/InJaTam/refs/heads/haroldkim22-markertry/marker.svg',
+      iconSize:[100,100],
+      iconAnchor:[50,75],
+      popupAnchor: [0, -40]
+    });
+
+    L.imageOverlay("https://i.imgur.com/O5p8OLJ.png",bounds).addTo(map);
+
+    map.fitBounds(bounds); 
+    map.setMinZoom(map.getZoom()); 
+    map.setMaxBounds(bounds);
+    map.on('zoomend',()=>{map.dragging.enable(); map.keyboard.enable();});
+
+
+    // ================================    
+    // 마커 데이터
+    // ================================
+    const markerData = [
+      {
+        coords: [200, 300],
+        name: "전망대",
+        pano: "https://pannellum.org/images/alma.jpg",
+        audio: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_b3bcbba7a1.mp3"
+      }
+    ];
+
+    // ================================
+    // 공통: 마커 생성 함수
+    // ================================
+    function createMarker(item) {
+      const marker = L.marker(item.coords, {icon: customIcon}).addTo(map);
+      marker.bindTooltip(item.name, {direction:"bottom"});
+      marker.on("click", () => showPanorama(item.name, item.pano, item.audio));
+      return marker;
+    }
+    markerData.forEach(createMarker);
+    
+        const popup=document.getElementById("popup"),
+              popupTitle=document.getElementById("popup-title"),
+              popupClose=document.getElementById("popup-close");
+
+    // ================================
+    // 📍 마커 추가 버튼
+    // ================================
+    let addMode = false;
+    let addBtnRef = null; // 📍 버튼 참조 저장
+
+    const AddMarkerControl = L.Control.extend({
+      onAdd: function(map) {
+        const btn = L.DomUtil.create("div", "leaflet-control-addmarker leaflet-bar");
+        btn.innerHTML = "📍";
+        btn.title = "마커 추가";
+        addBtnRef = btn;
+
+        L.DomEvent.disableClickPropagation(btn);
+        L.DomEvent.disableScrollPropagation(btn);
+
+        btn.onclick = function(e) {
+          e.preventDefault();
+          addMode = !addMode;
+          btn.classList.toggle("active", addMode);
+          if(addMode) alert("지도에서 위치를 클릭해 새 마커를 추가하세요.");
+        };
+        return btn;
+      }
+    });
+
+    // ================================
+    // ℹ️ 버튼 (데이터 저장)
+    // ================================
+    const InfoControl = L.Control.extend({
+      onAdd: function(map) {
+        const btn = L.DomUtil.create("div", "leaflet-control-info leaflet-bar");
+        btn.innerHTML = "ℹ️";
+        btn.title = "마커 데이터 저장";
+
+        L.DomEvent.disableClickPropagation(btn);
+        L.DomEvent.disableScrollPropagation(btn);
+
+        btn.onclick = function(e) {
+          e.preventDefault();
+          const dataStr = JSON.stringify(markerData, null, 2);
+          const blob = new Blob([dataStr], {type:"text/plain"});
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "markerData.txt";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        };
+        return btn;
+      }
+    });
+
+    // ================================
+    // 컨트롤 추가 (📍 먼저 → ℹ️ 나중)
+    // ================================
+    map.addControl(new AddMarkerControl({ position: "topleft" })); // 📍 버튼
+    map.addControl(new InfoControl({ position: "topleft" }));      // ℹ️ 버튼 (맨 아래)
+
+    // ================================
+    // 지도 클릭 시 새 마커 추가
+    // ================================
+    map.on("click", function(e){
+      if(!addMode) return;
+      addMode = false;
+
+      // 📍 버튼 active 해제
+      if(addBtnRef) addBtnRef.classList.remove("active");
+
+      const name = prompt("마커 이름을 입력하세요:");
+      if(!name) return;
+
+      const panoUrl = prompt("파노라마(사진) URL을 입력하세요:");
+      if(!panoUrl) return;
+
+      const audioUrl = prompt("소리 URL을 입력하세요:");
+      if(!audioUrl) return;
+
+      const newItem = {
+        coords: [e.latlng.lat, e.latlng.lng],
+        name,
+        pano: panoUrl,
+        audio: audioUrl
+      };
+      markerData.push(newItem);
+      createMarker(newItem);
+    });
+
+
+    // 팝업 외부 클릭 시 닫기
+    window.addEventListener("click", (e) => {
+        if (popup.classList.contains("show") && !popup.querySelector(".popup-content").contains(e.target)) {
+            popup.classList.remove("show");
+            popup.classList.add("hide");
+            setTimeout(() => {
+                popup.style.display = "none";
+                popup.classList.remove("hide");
+                if (viewer) viewer.destroy();
+                audio.pause();
+            }, 300);
+        }
+    });
+
+    // ================================
+    // 파노라마 & 사운드
+    // ================================
+    let viewer, audio=new Audio();
+
+    const overlay = document.getElementById("overlay");
+
+  function showPanorama(name, panoUrl, audioUrl){
+      popupTitle.textContent = name;
+      popup.style.display = "block";
+      overlay.classList.add("show");
+      setTimeout(() => {
+          popup.classList.add("show");
+
+          // 팝업이 보이기 시작한 후에 실행
+          if(viewer) viewer.destroy();
+          viewer = pannellum.viewer('popup-panorama', {
+              type: "equirectangular",
+              panorama: panoUrl,
+              autoLoad: true,
+              title: name
+          });
+
+          // 오디오 실행
+          audio.pause();
+          audio = new Audio(audioUrl);
+          audio.loop = true;
+          audio.play();
+      }, 10);
+  }
+
+
+
+    function closePopup(){
+        popup.classList.remove("show");
+        popup.classList.add("hide");
+        overlay.classList.remove("show");
+        setTimeout(() => {
+            popup.style.display = "none";
+            popup.classList.remove("hide");
+            if(viewer) viewer.destroy();
+            audio.pause();
+        }, 300);
+    }
+
+    popupClose.onclick = closePopup;
+    overlay.onclick = closePopup;
+
+    // 사운드 / 종료
+    document.getElementById("soundToggle").onclick=function(){
+      if(audio.paused){audio.play();this.textContent="🔊 Sound On";}
+      else{audio.pause();this.textContent="🔇 Sound Off";}
+    };
+    document.getElementById("exitBtn").onclick=()=>{
+      document.getElementById("map").style.display="block";
+      document.getElementById("panorama").style.display="none";
+      document.getElementById("controls").style.display="none";
+      if(viewer) viewer.destroy();
+      audio.pause();
+      map.fitBounds(bounds);
+    };
+  </script>
+</body>
+</html>
