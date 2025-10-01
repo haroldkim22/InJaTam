@@ -412,10 +412,18 @@
 
     const customIcon=L.icon({
       iconUrl:'marker.svg',
-      iconSize:[25,25],
-      iconAnchor:[0, 0],
-      popupAnchor: [0, -40]
+      iconSize:[30,30],
+      iconAnchor:[15,30],
+      popupAnchor: [0, -30]
     });
+
+    // const customIcon = L.divIcon({
+    //   html: '<img src="marker.svg" style="width:40px;height:40px;">',
+    //   className: '',   // Leaflet 기본 클래스 제거 (흰 네모 배경 없앰)
+    //   iconSize: [100, 100],
+    //   iconAnchor: [50, 75],
+    //   popupAnchor: [0, -40]
+    // });
 
     L.imageOverlay("https://i.imgur.com/O5p8OLJ.png",bounds).addTo(map);
 
@@ -769,8 +777,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
