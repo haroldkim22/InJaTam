@@ -43,6 +43,13 @@ const imgWidth = 2754;   // 실제 PNG 가로 px
 const imgHeight = 1556;   // 실제 PNG 세로 px2754 1556
 const bounds = [[0,0], [imgHeight, imgWidth]];
 
+const customIcon = L.icon({
+  iconURL: 'marker.svg'
+  iconSize: [40, 40], 
+  iconAnchor: [20, 40], 
+  popupAnchor: [0, -40] 
+})
+
 const imageUrl = 'https://i.imgur.com/O5p8OLJ.png';
 L.imageOverlay(imageUrl, bounds).addTo(map);
 
@@ -62,7 +69,7 @@ map.setMaxBounds(bounds);
   for (let i=0; i<20; i++) {
     const x = Math.random() * imgWidth;
     const y = Math.random() * imgHeight;
-    const marker = L.marker([y,x]).addTo(map);
+    const marker = L.marker([y,x], {icon: customIcon}).addTo(map);
     marker.bindTooltip("마커"+(i+1), {direction:"top"});
     marker.on("click", ()=> showPanorama("마커"+(i+1)));
   }
@@ -99,6 +106,7 @@ map.setMaxBounds(bounds);
 </script>
 </body>
 </html>
+
 
 
 
