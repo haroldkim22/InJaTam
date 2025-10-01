@@ -1,105 +1,227 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>부소산 파노라마 지도</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <!-- Leaflet & Pannellum -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css" />
+
   <style>
-    html, body { height: 100%; margin: 0; }
-    #map, #panorama { width: 100%; height: 100%; }
+    :root{
+      /* 레이아웃 조정용 변수 (원하면 수치만 바꿔도 전체가 같이 조정됨) */
+      --page-max-w: 1200px;    /* 컨텐츠 최대 폭 (좌우 여백 유지) */
+      --side-gap: 32px;        /* 좌우 여백 */
+      --header-h: 120px;       /* 제목 영역 높이 */
+      --between-gap: 24px;     /* 제목과 지도 사이 간격 */
+      --map-bottom-gap: 16px;  /* 지도 하단 여백(거의 0에 가깝게) */
+    }
+
+    /* 화면 전체 그라데이션 (헤더+지도+여백 전부 적용) */
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: linear-gradient(135deg, #F0F8B8 0%, #B8E986 100%);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, 'Noto Sans KR', sans-serif;
+    }
+
+    /* 중앙 정렬된 페이지 래퍼 */
+    .page {
+      min-height: 100%;
+      max-width: var(--page-max-w);
+      margin: 0 auto;
+      padding: 0 var(--side-gap);
+      display: flex;
+      flex-direction: column;
+      /* 지도 영역이 화면 정중앙보다 살짝 아래로 보이도록 위쪽 공간을 더 배분 */
+    }
+
+    /* 상단 제목 박스 (스크린샷처럼 살짝 밝은 박스 + 그림자) */
+    #header {
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 12px;
+      background: linear-gradient(135deg, #F3FCD2 0%, #C6ECA7 100%);
+      border-radius: 14px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+      border: 2px solid rgba(0, 0, 0, 0.15);
+    }
+    #title {
+      font-size: 38px;
+      font-weight: 800;
+      color: #555555;
+      text-shadow: 1px 2px 6px rgba(0,0,0,0.25);
+    }
+
+    /* 지도/파노라마 컨테이너: 좌우 여백 유지, 하단 여백 거의 없게 */
+    .map-wrap {
+      position: relative;
+      /* 남은 세로공간을 거의 전부 지도가 차지 → 하단 여백 안 생기도록 */
+      height: calc(100vh - var(--header-h) - var(--between-gap) - var(--map-bottom-gap));
+      margin-top: var(--between-gap);
+      margin-bottom: var(--map-bottom-gap);
+      border-radius: 12px;
+      overflow: hidden;        /* 가장자리 라운드 */
+      box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+      background: #eef7ff;     /* 로딩 중 배경 */
+      border: 2px solid rgba(0, 0, 0, 0.12);
+    }
+
+    /* 실제 지도/파노라마 DOM */
+    #map, #panorama {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
     #panorama { display: none; }
+
+    /* Leaflet 회색 배경 제거(바깥 그라데이션이 비치게) */
+    .leaflet-container { background: transparent !important; }
+
+    /* 파노라마 컨트롤 오버레이 */
     #controls {
-      position: absolute; top: 10px; left: 10px; z-index: 1000;
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      z-index: 1000;
       display: none;
     }
-    #controls button { margin-right: 5px; }
+    #controls button {
+      margin-right: 8px;
+      padding: 8px 12px;
+      border: 0;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.9);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      font-weight: 600;
+      color: #083a57;
+      cursor: pointer;
+    }
+    #controls button:hover { background: #ffffff; }
+
+    /* 반응형: 작은 화면에서 제목/여백 살짝 축소 */
+    @media (max-width: 640px){
+      :root{
+        --header-h: 96px;
+        --side-gap: 16px;
+      }
+      #title{ font-size: 28px; }
+    }
   </style>
 </head>
+
 <body>
+  <div class="page">
+    <!-- 상단 제목 박스 -->
+    <header id="header">
+      <div id="title">🗺️ 부소산 파노라마 지도</div>
+    </header>
 
-<div id="map"></div>
-<div id="panorama"></div>
-<div id="controls">
-  <button id="soundToggle">🔊 Sound On</button>
-  <button id="exitBtn">⏪ Back to Map</button>
-</div>
+    <!-- 지도 & 파노라마 영역 (좌우 여백 유지, 하단 꽉 채움) -->
+    <div class="map-wrap">
+      <div id="map"></div>
+      <div id="panorama"></div>
 
-<!-- JS libs -->
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+      <div id="controls">
+        <button id="soundToggle">🔊 Sound On</button>
+        <button id="exitBtn">⏪ Back to Map</button>
+      </div>
+    </div>
+  </div>
 
-<script>
-  // === 1. 메인 지도: png 이미지 불러오기 ===
-  const map = L.map('map', {
-    crs: L.CRS.Simple, // 단순 픽셀 좌표계
-    minZoom: -2,
-    maxZoom: 4
-  });
+  <!-- JS libs -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
 
-const imgWidth = 2754;   // 실제 PNG 가로 px
-const imgHeight = 1556;   // 실제 PNG 세로 px2754 1556
-const bounds = [[0,0], [imgHeight, imgWidth]];
+  <script>
+    // === 기본 이미지 지도 세팅 (PNG 한 장을 지도처럼) ===
+    const imgWidth = 2754;
+    const imgHeight = 1556;
+    const bounds = [[0,0], [imgHeight, imgWidth]];
 
-const imageUrl = 'https://i.imgur.com/O5p8OLJ.png';
-L.imageOverlay(imageUrl, bounds).addTo(map);
-
-// 이미지 크기에 맞게 화면 딱 맞추기
-map.fitBounds(bounds);
-
-// 현재 화면 줌 레벨을 최소 줌으로 설정 (축소 금지)
-const currentZoom = map.getZoom();
-map.setMinZoom(currentZoom);
-
-// 화면 이동 범위를 이미지 내부로 고정
-map.setMaxBounds(bounds);
-
-
-
-  // === 2. 마커 20개 랜덤 생성 ===
-  for (let i=0; i<20; i++) {
-    const x = Math.random() * imgWidth;
-    const y = Math.random() * imgHeight;
-    const marker = L.marker([y,x]).addTo(map);
-    marker.bindTooltip("마커"+(i+1), {direction:"top"});
-    marker.on("click", ()=> showPanorama("마커"+(i+1)));
-  }
-
-  // === 3. 파노라마 뷰어 ===
-  let viewer;
-  let audio = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_b3bcbba7a1.mp3");
-  audio.loop = true;
-
-  function showPanorama(name){
-    document.getElementById("map").style.display="none";
-    document.getElementById("panorama").style.display="block";
-    document.getElementById("controls").style.display="block";
-    if(viewer) viewer.destroy();
-    viewer = pannellum.viewer('panorama', {
-      type: "equirectangular",
-      panorama: "panorama1.jpg",
-      autoLoad: true,
-      title: name
+    const map = L.map('map', {
+      crs: L.CRS.Simple,
+      minZoom: -1,
+      maxZoom: 1,
+      maxBounds: bounds,
+      maxBoundsViscosity: 1.0   // 경계 바깥 드래그 못 나가게
     });
-  }
 
-  document.getElementById("soundToggle").onclick = ()=>{
-    if(audio.paused){ audio.play(); soundToggle.textContent="🔊 Sound On";}
-    else { audio.pause(); soundToggle.textContent="🔇 Sound Off";}
-  };
-  document.getElementById("exitBtn").onclick = ()=>{
-    document.getElementById("map").style.display="block";
-    document.getElementById("panorama").style.display="none";
-    document.getElementById("controls").style.display="none";
-    if(viewer) viewer.destroy();
-    audio.pause();
-  };
-</script>
+    const customIcon = L.icon({
+      iconUrl: 'https://raw.githubusercontent.com/haroldkim22/InJaTam/refs/heads/haroldkim22-markertry/marker.svg',
+      iconSize: [100, 100], 
+      iconAnchor: [20, 40], 
+      popupAnchor: [0, -40] 
+    })
+
+    const imageUrl = 'https://i.imgur.com/O5p8OLJ.png';
+    L.imageOverlay(imageUrl, bounds).addTo(map);
+
+    map.fitBounds(bounds);
+    const minZoomAtFit = map.getZoom();   // fitBounds 후 실제 줌 레벨
+    map.setMinZoom(minZoomAtFit);         // 이 이하로는 축소 금지
+    map.setMaxBounds(bounds);             // 지도 영역 밖으로 못 나가게
+
+
+    // 드래그 허용
+    function updateDragState() {
+      const z = map.getZoom();
+      
+      map.dragging.enable();
+      map.keyboard.enable();
+      
+    }
+    map.on('zoomend', updateDragState);
+    updateDragState();
+
+    // 데모용 랜덤 마커 20개
+    for (let i=0; i<20; i++) {
+      const x = Math.random() * imgWidth;
+      const y = Math.random() * imgHeight;
+      const marker = L.marker([y,x], {icon: customIcon}).addTo(map);
+      marker.bindTooltip("마커"+(i+1), {direction:"top"});
+      marker.on("click", ()=> showPanorama("마커"+(i+1)));
+    }
+
+    // === 파노라마 뷰어 & 사운드 ===
+    let viewer;
+    const audio = new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_b3bcbba7a1.mp3");
+    audio.loop = true;
+
+    function showPanorama(name){
+      document.getElementById("map").style.display="none";
+      document.getElementById("panorama").style.display="block";
+      document.getElementById("controls").style.display="block";
+      if(viewer) viewer.destroy();
+      viewer = pannellum.viewer('panorama', {
+        type: "equirectangular",
+        panorama: "https://pannellum.org/images/alma.jpg",
+        autoLoad: true,
+        title: name
+      });
+    }
+
+    const soundBtn = document.getElementById("soundToggle");
+    soundBtn.onclick = ()=>{
+      if(audio.paused){ audio.play(); soundBtn.textContent="🔊 Sound On";}
+      else { audio.pause(); soundBtn.textContent="🔇 Sound Off";}
+    };
+
+    const exitBtn = document.getElementById("exitBtn");
+    exitBtn.onclick = ()=>{
+      document.getElementById("map").style.display="block";
+      document.getElementById("panorama").style.display="none";
+      document.getElementById("controls").style.display="none";
+      if(viewer) viewer.destroy();
+      audio.pause();
+      map.fitBounds(bounds);
+      updateDragState();
+    };
+  </script>
 </body>
 </html>
-
-
-
-
